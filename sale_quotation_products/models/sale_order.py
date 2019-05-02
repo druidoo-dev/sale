@@ -21,7 +21,6 @@ class SaleOrder(models.Model):
             'company_id': self.company_id.id,
             'partner_id': self.partner_id.id,
             'search_default_location_id': self.warehouse_id.lot_stock_id.id,
-            # search_default_warehouse_id=self.warehouse_id.id,
         })
         action.update({
             'context': context,

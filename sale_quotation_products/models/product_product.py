@@ -72,23 +72,6 @@ class ProductProduct(models.Model):
         self.ensure_one()
         return self.get_formview_action()
 
-    @api.multi
-    def action_product_add_one(self):
-        sale_order_id = self._context.get('active_id', False)
-        if not sale_order_id:
-            return True
-        for rec in self:
-            # we find a sol and if the uom of the sol and the product are
-            # different convert qty to sum an unit from sol uom to product uom
-            line = self.env['sale.order.line'].search([
-                ('order_id', '=', sale_order_id),
-                ('product_id', '=', rec.id)], limit=1)
-            qty = 1.0
-            if line.product_uom != rec.uom_id:
-                qty = line.product_uom._compute_quantity(
-                    qty, rec.uom_id)
-            rec.qty += qty
-
     @api.model
     def fields_view_get(self, view_id=None, view_type='form',
                         toolbar=False, submenu=False):
@@ -116,15 +99,6 @@ class ProductProduct(models.Model):
                     # we force editable no matter user rights
                     'readonly': '0',
                 }))
-            # add button add one
-            placeholder.addprevious(
-                etree.Element('button', {
-                    'name': 'action_product_add_one',
-                    'type': 'object',
-                    'icon': 'fa-plus',
-                    'string': _('Add one'),
-                }))
-            res['fields'].update(self.fields_get(['qty']))
 
             # add button tu open form
             placeholder = doc.xpath("//tree")[0]
