@@ -19,15 +19,13 @@
 ##############################################################################
 {
     'name': 'Sale Quotation Products',
-    'version': '11.0.1.0.1',
+    'version': '12.0.1.0.0',
     'category': 'Sales Management',
     'sequence': 14,
     'summary': '',
     'author': 'ADHOC SA',
     'website': 'www.adhoc.com.ar',
     'license': 'AGPL-3',
-    'images': [
-    ],
     'depends': [
         'sale',
     ],
@@ -36,7 +34,4 @@
     ],
     'demo': [
     ],
-    'installable': False,
-    'auto_install': False,
-    'application': False,
 }

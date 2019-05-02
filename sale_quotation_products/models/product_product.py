@@ -18,21 +18,16 @@ class ProductProduct(models.Model):
     @api.multi
     def write(self, vals):
         """
-        Si en vals solo viene qty y sale_quotation_products entonces es un
-        dummy write y hacemos esto para que usuarios sin permiso de escribir
-        en productos puedan modificar la cantidad
+        If we get sale_quotation_products in the context and
+        vals contains only qty value, then we are dealing with a dummy write.
+        We do this to allow users without write access to be able to
+        modify the qty.
         """
-        # usamos 'qty' in vals y no vals.get('qty') porque se podria estar
-        # pasando qty = 0 y queremos que igal entre
         if self._context.get('sale_quotation_products') and \
-                len(vals) == 1 and 'qty' in vals:
-            # en vez de hacerlo con sudo lo hacemos asi para que se guarde
-            # bien el usuario creador y ademas porque SUPERADMIN podria no
-            # tener el permiso de editar productos
-            # self = self.sudo()
-            qty = vals.get('qty')
+                list(vals.keys()) == ['qty']:
+            # We avoid using sudo to maintain write_uid
             for rec in self:
-                rec._set_qty(qty)
+                rec._set_qty(vals.get('qty'))
             return True
         return super(ProductProduct, self).write(vals)
 
@@ -98,7 +93,7 @@ class ProductProduct(models.Model):
     def fields_view_get(self, view_id=None, view_type='form',
                         toolbar=False, submenu=False):
         """
-        If we came from sale order, we send in context 'force_product_edit'
+        If we came from sale order, we send context 'sale_quotation_products'
         and we change tree view to make editable and also field qty
         """
         res = super(ProductProduct, self).fields_view_get(

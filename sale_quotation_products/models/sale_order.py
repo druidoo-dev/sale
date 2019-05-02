@@ -3,7 +3,7 @@
 # directory
 ##############################################################################
 from odoo import models, api, _
-from odoo.tools.safe_eval import safe_eval
+from ast import literal_eval
 
 
 class SaleOrder(models.Model):
@@ -12,27 +12,22 @@ class SaleOrder(models.Model):
     @api.multi
     def add_products_to_quotation(self):
         self.ensure_one()
-        action_read = False
-        actions = self.env.ref('product.product_normal_action_sell')
-        if actions:
-            action_read = actions.read()[0]
-            context = safe_eval(action_read['context'])
-            context.update(dict(
-                sale_quotation_products=True,
-                pricelist=self.pricelist_id.display_name,
-                # we send company in context so it filters taxes
-                company_id=self.company_id.id,
-                partner_id=self.partner_id.id,
-                search_default_location_id=self.warehouse_id.lot_stock_id.id,
-                # search_default_warehouse_id=self.warehouse_id.id,
-            ))
-            action_read.update(
-                context=context,
-                # view_mode='tree,form'.
-                name=_('Quotation Products'),
-            )
-            action_read['context'] = context
-        return action_read
+        action = self.env.ref('product.product_normal_action_sell').read()[0]
+        context = literal_eval(action['context'])
+        context.update({
+            'sale_quotation_products': True,
+            'pricelist': self.pricelist_id.display_name,
+            # we send company in context so it filters taxes
+            'company_id': self.company_id.id,
+            'partner_id': self.partner_id.id,
+            'search_default_location_id': self.warehouse_id.lot_stock_id.id,
+            # search_default_warehouse_id=self.warehouse_id.id,
+        })
+        action.update({
+            'context': context,
+            'name': _('Quotation Products'),
+        })
+        return action
 
     @api.multi
     def add_products(self, product_ids, qty):
